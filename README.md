@@ -124,3 +124,6 @@
 - **托盘支持**：Hardcodet.NotifyIcon.Wpf
 - **目标平台**：Windows 10/11
 
+
+## FAQ
+如何配置代理：https://github.com/cornradio/tray-chrome/issues/15#issuecomment-3798148987 
