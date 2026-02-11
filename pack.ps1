@@ -21,9 +21,9 @@ try {
         Write-Host "Output directory: ./publish" -ForegroundColor White
         Write-Host "Executable file: TrayChrome.exe" -ForegroundColor White
         Write-Host "`nImportant notes:" -ForegroundColor Yellow
-        Write-Host "   • Target machine needs .NET 6.0 Desktop Runtime installed" -ForegroundColor Gray
+        Write-Host "   • Target machine needs .NET 9.0 Desktop Runtime installed" -ForegroundColor Gray
         Write-Host "   • Smaller file size but requires runtime dependency" -ForegroundColor Gray
-        Write-Host "   • Download: https://dotnet.microsoft.com/download/dotnet/6.0" -ForegroundColor Gray
+        Write-Host "   • Download: https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Gray
         
         # Display file information
         $exePath = "./publish/TrayChrome.exe"
