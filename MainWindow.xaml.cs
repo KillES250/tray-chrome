@@ -174,6 +174,11 @@ namespace TrayChrome
 
         private async void InitializeWebView(string? startupUrl = null)
         {
+            await InitializeWebViewInternal(startupUrl);
+        }
+
+        private async Task InitializeWebViewInternal(string? startupUrl = null)
+        {
             try
             {
                 // 检查 WebView2 是否已经初始化
@@ -237,6 +242,30 @@ namespace TrayChrome
                         catch { }
                     }
                     
+                    // 配置代理（如果启用）
+                    if (appSettings.IsProxyEnabled && !string.IsNullOrEmpty(appSettings.ProxyServer))
+                    {
+                        try
+                        {
+                            var optionsType = typeof(CoreWebView2EnvironmentOptions);
+                            var additionalBrowserArgumentsProperty = optionsType.GetProperty("AdditionalBrowserArguments");
+                            if (additionalBrowserArgumentsProperty != null)
+                            {
+                                var currentArgs = additionalBrowserArgumentsProperty.GetValue(options) as string ?? "";
+                                string proxyArgs = $"--proxy-server={appSettings.ProxyServer} --proxy-bypass-list=localhost;127.0.0.1";
+                                var newArgs = string.IsNullOrEmpty(currentArgs) 
+                                    ? proxyArgs 
+                                    : currentArgs + " " + proxyArgs;
+                                additionalBrowserArgumentsProperty.SetValue(options, newArgs);
+                                System.Diagnostics.Debug.WriteLine($"已设置启动代理: {appSettings.ProxyServer}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"设置启动代理失败: {ex.Message}");
+                        }
+                    }
+                    
                     // 创建环境并初始化 WebView2（在第一次调用时传入自定义环境）
                     var environment = await CoreWebView2Environment.CreateAsync(null, null, options);
                     await webView.EnsureCoreWebView2Async(environment);
@@ -278,6 +307,9 @@ namespace TrayChrome
                 
                 // 初始化广告拦截器（在 CoreWebView2 准备好后）
                 InitializeAdBlocker();
+                
+                // 监听右键菜单请求
+                webView.CoreWebView2.ContextMenuRequested += CoreWebView2_ContextMenuRequested;
                 
                 // 导航到启动URL或默认URL
                 string urlToNavigate = !string.IsNullOrEmpty(startupUrl) 
@@ -418,6 +450,111 @@ namespace TrayChrome
             }
         }
         
+        private void CoreWebView2_ContextMenuRequested(object? sender, CoreWebView2ContextMenuRequestedEventArgs e)
+        {
+            try
+            {
+                // 创建一个子菜单
+                var subMenu = webView.CoreWebView2.Environment.CreateContextMenuItem(
+                    "Tray Chrome 选项", 
+                    null, 
+                    CoreWebView2ContextMenuItemKind.Submenu);
+                
+                // 1. 切换代理
+                var proxyToggleItem = webView.CoreWebView2.Environment.CreateContextMenuItem(
+                    appSettings.IsProxyEnabled ? "禁用代理 (ON)" : "启用代理 (OFF)",
+                    null,
+                    CoreWebView2ContextMenuItemKind.Command);
+                proxyToggleItem.CustomItemSelected += (s, args) => ToggleProxy();
+                subMenu.Children.Add(proxyToggleItem);
+                
+                // 2. 代理设置
+                var proxySettingsItem = webView.CoreWebView2.Environment.CreateContextMenuItem(
+                    "代理地址设置...",
+                    null,
+                    CoreWebView2ContextMenuItemKind.Command);
+                proxySettingsItem.CustomItemSelected += (s, args) => ShowProxySettingsDialog();
+                subMenu.Children.Add(proxySettingsItem);
+                
+                subMenu.Children.Add(webView.CoreWebView2.Environment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                
+                // 3. 极简模式切换
+                var minimalModeItem = webView.CoreWebView2.Environment.CreateContextMenuItem(
+                    isSuperMinimalMode ? "退出极简模式" : "进入极简模式",
+                    null,
+                    CoreWebView2ContextMenuItemKind.Command);
+                minimalModeItem.CustomItemSelected += (s, args) => ToggleSuperMinimalMode(!isSuperMinimalMode);
+                subMenu.Children.Add(minimalModeItem);
+                
+                // 将 Tray Chrome 选项添加到右键菜单顶部
+                e.MenuItems.Insert(0, subMenu);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"创建右键菜单失败: {ex.Message}");
+            }
+        }
+        
+        private async void ToggleProxy()
+        {
+            appSettings.IsProxyEnabled = !appSettings.IsProxyEnabled;
+            SaveSettings();
+            
+            await UpdateProxyConfig();
+            
+            if (ProxyToggleMenuItem != null)
+            {
+                ProxyToggleMenuItem.IsChecked = appSettings.IsProxyEnabled;
+            }
+            
+            string status = appSettings.IsProxyEnabled ? $"已启用代理: {appSettings.ProxyServer}" : "已禁用代理";
+            System.Diagnostics.Debug.WriteLine(status);
+            
+            // 提示用户可能需要刷新页面
+            // webView.CoreWebView2.Reload(); 
+        }
+        
+        private async Task UpdateProxyConfig()
+        {
+            if (webView != null && webView.CoreWebView2 != null)
+            {
+                try
+                {
+                    // 尝试通过反射调用 SetHttpProxyConfigAsync
+                    var profile = webView.CoreWebView2.Profile;
+                    var method = profile.GetType().GetMethod("SetHttpProxyConfigAsync", new[] { typeof(string) });
+                    
+                    if (method != null)
+                    {
+                        string proxyConfig = (appSettings.IsProxyEnabled && !string.IsNullOrEmpty(appSettings.ProxyServer)) 
+                            ? appSettings.ProxyServer 
+                            : "";
+                        
+                        var task = (Task?)method.Invoke(profile, new object[] { proxyConfig });
+                        if (task != null) await task;
+                        
+                        System.Diagnostics.Debug.WriteLine($"动态代理配置已应用: {proxyConfig}");
+                    }
+                    else
+                    {
+                        // 如果不支持反射调用，且设置发生了变化，建议重置环境
+                        System.Diagnostics.Debug.WriteLine("当前 SDK 不支持 SetHttpProxyConfigAsync，如需应用代理更改请重置环境或重启。");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"动态切换代理失败: {ex.Message}");
+                }
+            }
+        }
+        
+        private void ShowProxySettingsDialog()
+        {
+            // 改为打开统一的设置窗口，并定位到浏览器设置页
+            var settingsWindow = new SettingsWindow(appSettings, this, Application.Current as App);
+            settingsWindow.ShowDialog();
+        }
+
         private void CoreWebView2_NewWindowRequested(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2NewWindowRequestedEventArgs e)
         {
             // 检查是否按住了Ctrl键
@@ -973,6 +1110,26 @@ namespace TrayChrome
                 
                 BookmarkContextMenu.Items.Add(bookmarkItem);
             }
+            
+            // 更新代理菜单项状态
+            if (ProxyToggleMenuItem != null)
+            {
+                ProxyToggleMenuItem.IsChecked = appSettings.IsProxyEnabled;
+            }
+        }
+        
+        private void ProxyToggle_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleProxy();
+            if (ProxyToggleMenuItem != null)
+            {
+                ProxyToggleMenuItem.IsChecked = appSettings.IsProxyEnabled;
+            }
+        }
+        
+        private void ProxySettings_Click(object sender, RoutedEventArgs e)
+        {
+            ShowProxySettingsDialog();
         }
 
         private void LoadSettings()
@@ -1608,30 +1765,44 @@ namespace TrayChrome
         {
             try
             {
-                if (webView?.CoreWebView2 != null)
+                if (webView != null)
                 {
+                    // 获取父级容器
+                    var parent = webView.Parent as Panel;
+                    if (parent == null) return;
+                    
+                    // 记录索引
+                    int index = parent.Children.IndexOf(webView);
+                    
                     // 1. 停止内存清理定时器
                     StopMemoryCleanupTimer();
                     
-                    // 2. 清理所有浏览数据
-                    await webView.CoreWebView2.Profile.ClearBrowsingDataAsync();
+                    // 2. 尝试停止当前操作
+                    if (webView.CoreWebView2 != null)
+                    {
+                        webView.CoreWebView2.Stop();
+                    }
                     
-                    // 3. 尝试关闭WebView2
-                    webView.CoreWebView2.Stop();
-                    
-                    // 4. 释放WebView2资源
+                    // 3. 从 UI 移除并释放 (WPF 中 Dispose 后不能重用)
+                    parent.Children.RemoveAt(index);
                     webView.Dispose();
                     
-                    // 5. 强制垃圾回收
+                    // 4. 强制垃圾回收
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                     GC.Collect();
                     
-                    // 6. 短暂延迟让系统清理进程
-                    await Task.Delay(2000);
+                    // 5. 短暂延迟
+                    await Task.Delay(1000);
                     
-                    // 7. 重新初始化WebView2
-                    await webView.EnsureCoreWebView2Async();
+                    // 6. 创建新实例并放回原位
+                    webView = new Microsoft.Web.WebView2.Wpf.WebView2();
+                    webView.Name = "webView";
+                    Grid.SetRow(webView, 1);
+                    parent.Children.Insert(index, webView);
+                    
+                    // 7. 重新初始化
+                    await InitializeWebViewInternal();
                     
                     // 8. 重新初始化广告拦截器
                     InitializeAdBlocker();
@@ -1720,6 +1891,18 @@ namespace TrayChrome
                 if (settings.AdAllowRules != null)
                 {
                     adBlocker.AllowRules = settings.AdAllowRules;
+                }
+
+                // 应用代理设置
+                bool proxyChanged = (appSettings.IsProxyEnabled != settings.IsProxyEnabled) || 
+                                   (appSettings.ProxyServer != settings.ProxyServer);
+                
+                appSettings.IsProxyEnabled = settings.IsProxyEnabled;
+                appSettings.ProxyServer = settings.ProxyServer;
+                
+                if (proxyChanged)
+                {
+                    _ = UpdateProxyConfig(); // 异步调用
                 }
                 
                 // 保存设置
@@ -1897,6 +2080,10 @@ namespace TrayChrome
         public bool IsAdBlockEnabled { get; set; } = false;
         public List<string> AdBlockRules { get; set; } = new List<string>();
         public List<string> AdAllowRules { get; set; } = new List<string>();
+        
+        // 代理设置
+        public bool IsProxyEnabled { get; set; } = false;
+        public string ProxyServer { get; set; } = "127.0.0.1:7890";
         
         // 全局快捷键设置
         public string Hotkey { get; set; } = "alt + x";

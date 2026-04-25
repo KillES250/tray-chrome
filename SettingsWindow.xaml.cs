@@ -39,6 +39,8 @@ namespace TrayChrome
         public bool EnableGlobalHotKey { get; set; }
         public string Hotkey { get; set; } = string.Empty;
         public string SelectedIconType { get; set; } = "default";
+        public bool IsProxyEnabled { get; set; }
+        public string ProxyServer { get; set; } = string.Empty;
 
         public SettingsWindow(AppSettings settings, MainWindow? mainWindow = null, App? app = null)
         {
@@ -71,7 +73,9 @@ namespace TrayChrome
                 AdBlockRules = new List<string>(settings.AdBlockRules ?? new List<string>()),
                 AdAllowRules = new List<string>(settings.AdAllowRules ?? new List<string>()),
                 Hotkey = settings.Hotkey,
-                EnableGlobalHotKey = settings.EnableGlobalHotKey
+                EnableGlobalHotKey = settings.EnableGlobalHotKey,
+                IsProxyEnabled = settings.IsProxyEnabled,
+                ProxyServer = settings.ProxyServer
             };
             
             // 加载当前设置到UI
@@ -103,6 +107,8 @@ namespace TrayChrome
             AdAllowRulesText = string.Join("\r\n", currentSettings.AdAllowRules ?? new List<string>());
             EnableGlobalHotKey = currentSettings.EnableGlobalHotKey;
             Hotkey = currentSettings.Hotkey;
+            IsProxyEnabled = currentSettings.IsProxyEnabled;
+            ProxyServer = currentSettings.ProxyServer;
         }
 
         private void SetupDataBinding()
@@ -172,6 +178,14 @@ namespace TrayChrome
             
             HotKeyTextBox.Text = Hotkey;
             HotKeyTextBox.TextChanged += (s, e) => Hotkey = HotKeyTextBox.Text;
+
+            // 代理
+            ProxyEnabledCheckBox.IsChecked = IsProxyEnabled;
+            ProxyEnabledCheckBox.Checked += (s, e) => IsProxyEnabled = true;
+            ProxyEnabledCheckBox.Unchecked += (s, e) => IsProxyEnabled = false;
+
+            ProxyServerTextBox.Text = ProxyServer;
+            ProxyServerTextBox.TextChanged += (s, e) => ProxyServer = ProxyServerTextBox.Text;
         }
 
         private void LoadIconSetting()
@@ -340,6 +354,8 @@ namespace TrayChrome
                     .ToList();
                 currentSettings.EnableGlobalHotKey = EnableGlobalHotKey;
                 currentSettings.Hotkey = Hotkey;
+                currentSettings.IsProxyEnabled = IsProxyEnabled;
+                currentSettings.ProxyServer = ProxyServer;
                 
                 // 应用设置到主窗口
                 if (mainWindow != null)
@@ -442,6 +458,8 @@ namespace TrayChrome
             target.AdAllowRules = new List<string>(source.AdAllowRules ?? new List<string>());
             target.Hotkey = source.Hotkey;
             target.EnableGlobalHotKey = source.EnableGlobalHotKey;
+            target.IsProxyEnabled = source.IsProxyEnabled;
+            target.ProxyServer = source.ProxyServer;
         }
 
         // 收藏夹管理方法
