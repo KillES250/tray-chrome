@@ -1200,14 +1200,30 @@ namespace TrayChrome
 
         public void RefreshBookmarkMenu()
         {
-            // 清除现有的收藏夹菜单项（保留"添加到收藏夹"和分隔符）
-            var itemsToRemove = BookmarkContextMenu.Items.Cast<object>().Skip(2).ToList();
-            foreach (var item in itemsToRemove)
+            // 查找分隔符位置
+            int startIndex = -1;
+            int endIndex = -1;
+            
+            for (int i = 0; i < BookmarkContextMenu.Items.Count; i++)
             {
-                BookmarkContextMenu.Items.Remove(item);
+                if (BookmarkContextMenu.Items[i] is FrameworkElement element)
+                {
+                    if (element.Name == "BookmarkSeparator") startIndex = i;
+                    if (element.Name == "DynamicSeparatorEnd") endIndex = i;
+                }
+            }
+
+            if (startIndex == -1 || endIndex == -1) return;
+
+            // 清除两个分隔符之间的动态项
+            while (endIndex > startIndex + 1)
+            {
+                BookmarkContextMenu.Items.RemoveAt(startIndex + 1);
+                endIndex--;
             }
             
-            // 添加所有收藏夹到菜单
+            // 插入书签
+            int insertPos = startIndex + 1;
             foreach (var bookmark in bookmarks)
             {
                 MenuItem bookmarkItem = new MenuItem
@@ -1217,7 +1233,6 @@ namespace TrayChrome
                     ToolTip = bookmark.Url
                 };
                 
-                // 左键点击导航
                 bookmarkItem.Click += (s, args) => {
                     if (bookmarkItem.Tag != null)
                     {
@@ -1242,30 +1257,14 @@ namespace TrayChrome
                     }
                 };
                 
-                // 添加右键上下文菜单
+                // 添加右键编辑
                 ContextMenu itemContextMenu = new ContextMenu();
-                
                 MenuItem editItem = new MenuItem { Header = "编辑" };
                 editItem.Click += (s, args) => EditBookmark(bookmark);
-                
-                MenuItem deleteItem = new MenuItem { Header = "删除" };
-                deleteItem.Click += (s, args) => {
-                    var result = MessageBox.Show($"确定要删除收藏夹 \"{bookmark.Title}\" 吗？", 
-                        "删除收藏夹", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        bookmarks.Remove(bookmark);
-                        SaveBookmarks();
-                        RefreshBookmarkMenu();
-                    }
-                };
-                
                 itemContextMenu.Items.Add(editItem);
-                itemContextMenu.Items.Add(deleteItem);
                 bookmarkItem.ContextMenu = itemContextMenu;
                 
-                BookmarkContextMenu.Items.Add(bookmarkItem);
+                BookmarkContextMenu.Items.Insert(insertPos++, bookmarkItem);
             }
             
             // 更新代理菜单项状态
@@ -1273,6 +1272,17 @@ namespace TrayChrome
             {
                 ProxyToggleMenuItem.IsChecked = appSettings.IsProxyEnabled;
             }
+        }
+
+        private void ShowSettings_Bookmarks_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow(appSettings, this, Application.Current as App);
+            // 收藏夹通常是第5个标签，索引为 4
+            if (settingsWindow.MainTabControl != null)
+            {
+                settingsWindow.MainTabControl.SelectedIndex = 4;
+            }
+            settingsWindow.ShowDialog();
         }
         
         private void ProxyToggle_Click(object sender, RoutedEventArgs e)

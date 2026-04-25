@@ -38,7 +38,7 @@
         </Grid.RowDefinitions>
         
         <!-- 主内容区域 - 使用 TabControl 分类 -->
-        <TabControl Grid.Row="0" Margin="0,0,0,10">
+        <TabControl Name="MainTabControl" Grid.Row="0" Margin="0,0,0,10">
             <!-- 窗口设置 -->
             <TabItem Header="窗口设置">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -264,11 +264,11 @@
                     </Grid.RowDefinitions>
                     
                     <!-- 工具栏 -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Name="AddBookmarkButton" Content="添加收藏" Click="AddBookmarkButton_Click" Margin="0,0,5,0"/>
-                        <Button Name="EditBookmarkButton" Content="编辑" Click="EditBookmarkButton_Click" Margin="0,0,5,0"/>
-                        <Button Name="DeleteBookmarkButton" Content="删除" Click="DeleteBookmarkButton_Click" Margin="0,0,5,0"/>
-                        <Button Name="RefreshBookmarkButton" Content="刷新" Click="RefreshBookmarkButton_Click"/>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+                        <Button Name="AddBookmarkButton" Content="添加收藏" Click="AddBookmarkButton_Click" Margin="0,0,5,0" Padding="8,3"/>
+                        <Button Name="EditBookmarkButton" Content="编辑" Click="EditBookmarkButton_Click" Margin="0,0,5,0" Padding="8,3"/>
+                        <Button Name="DeleteBookmarkButton" Content="删除" Click="DeleteBookmarkButton_Click" Margin="0,0,5,0" Padding="8,3"/>
+                        <Button Name="RefreshBookmarkButton" Content="刷新" Click="RefreshBookmarkButton_Click" Padding="8,3"/>
                     </StackPanel>
                     
                     <!-- 收藏夹列表 -->
@@ -276,10 +276,14 @@
                              MouseDoubleClick="BookmarkListBox_MouseDoubleClick">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Vertical" Margin="5">
-                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14"/>
-                                    <TextBlock Text="{Binding Url}" Foreground="Gray" FontSize="11" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
+                                <Grid Margin="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Title}" FontWeight="Medium" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Url}" Foreground="Gray" FontSize="11" TextTrimming="CharacterEllipsis" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>

@@ -140,12 +140,15 @@
                     <Button.ContextMenu>
                         <ContextMenu Name="BookmarkContextMenu">
                             <MenuItem Header="添加到收藏夹" Click="AddBookmark_Click"/>
+                            <MenuItem Header="书签管理器" Click="ShowSettings_Bookmarks_Click"/>
+                            <Separator Name="BookmarkSeparator"/>
+                            <!-- 动态添加的收藏项将在这里 -->
+                            <Separator Name="DynamicSeparatorEnd" Visibility="Collapsed"/>
+                            <Separator/>
                             <MenuItem Header="open bookmark.json" Click="EditBookmarkJson_Click"/>
                             <Separator/>
                             <MenuItem Header="代理开关" IsCheckable="True" Name="ProxyToggleMenuItem" Click="ProxyToggle_Click"/>
                             <MenuItem Header="代理设置..." Click="ProxySettings_Click"/>
-                            <Separator/>
-                            <!-- 收藏夹项目将在这里动态添加 -->
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
