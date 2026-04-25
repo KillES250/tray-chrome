@@ -18,6 +18,12 @@ using Microsoft.Web.WebView2.Core;
 
 namespace TrayChrome
 {
+    public class HistoryItem
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+    }
+
     public partial class MainWindow : Window
     {
         // Windows API 常量
@@ -50,6 +56,11 @@ namespace TrayChrome
         private bool isAnimationEnabled = true; // 动画启用状态
         private bool hasSavedPosition = false; // 是否存在保存的位置
         private AdBlocker adBlocker = new AdBlocker(); // 广告拦截器
+        
+        // 历史记录追踪
+        private List<HistoryItem> historyList = new List<HistoryItem>();
+        private int historyIndex = -1;
+        private bool isNavigatingFromHistory = false;
         
         // 用于更新托盘图标提示的事件
         public event Action<string> TitleChanged;
@@ -362,6 +373,12 @@ namespace TrayChrome
             {
                 BackButton.IsEnabled = webView.CoreWebView2.CanGoBack;
                 ForwardButton.IsEnabled = webView.CoreWebView2.CanGoForward;
+                
+                if (e.IsSuccess)
+                {
+                    UpdateHistory(webView.Source.ToString(), webView.CoreWebView2.DocumentTitle);
+                }
+
                 // 确保每个页面都使用相同的缩放比例
                 webView.ZoomFactor = currentZoomFactor;
                 
@@ -770,6 +787,7 @@ namespace TrayChrome
         {
             if (webView.CoreWebView2?.CanGoBack == true)
             {
+                isNavigatingFromHistory = true;
                 webView.CoreWebView2.GoBack();
             }
         }
@@ -778,8 +796,147 @@ namespace TrayChrome
         {
             if (webView.CoreWebView2?.CanGoForward == true)
             {
+                isNavigatingFromHistory = true;
                 webView.CoreWebView2.GoForward();
             }
+        }
+
+        private void UpdateHistory(string url, string title)
+        {
+            if (string.IsNullOrEmpty(url) || url == "about:blank") return;
+
+            // 如果是历史导航，尝试定位索引
+            if (isNavigatingFromHistory)
+            {
+                isNavigatingFromHistory = false;
+                
+                // 检查是否是回到前一个或后一个
+                if (historyIndex > 0 && historyList[historyIndex - 1].Url == url)
+                {
+                    historyIndex--;
+                    if (!string.IsNullOrEmpty(title)) historyList[historyIndex].Title = title;
+                    return;
+                }
+                if (historyIndex < historyList.Count - 1 && historyList[historyIndex + 1].Url == url)
+                {
+                    historyIndex++;
+                    if (!string.IsNullOrEmpty(title)) historyList[historyIndex].Title = title;
+                    return;
+                }
+            }
+
+            // 检查是否重复（比如点击了当前页面的链接或刷新）
+            if (historyIndex >= 0 && historyList[historyIndex].Url == url)
+            {
+                if (!string.IsNullOrEmpty(title)) historyList[historyIndex].Title = title;
+                return;
+            }
+
+            // 新导航：清除前进历史
+            if (historyIndex < historyList.Count - 1)
+            {
+                historyList.RemoveRange(historyIndex + 1, historyList.Count - (historyIndex + 1));
+            }
+
+            historyList.Add(new HistoryItem { Url = url, Title = string.IsNullOrEmpty(title) ? url : title });
+            historyIndex++;
+
+            // 限制长度
+            if (historyList.Count > 100)
+            {
+                historyList.RemoveAt(0);
+                historyIndex--;
+            }
+        }
+
+        private void BackButton_RightClick(object sender, MouseButtonEventArgs e)
+        {
+            ShowHistoryMenu(BackButton, true);
+        }
+
+        private void ForwardButton_RightClick(object sender, MouseButtonEventArgs e)
+        {
+            ShowHistoryMenu(ForwardButton, false);
+        }
+
+        private void ShowHistoryMenu(FrameworkElement anchor, bool isBack)
+        {
+            try
+            {
+                if (historyList.Count == 0) return;
+
+                ContextMenu menu = new ContextMenu();
+                
+                if (isBack)
+                {
+                    // 显示当前索引之前的所有项
+                    for (int i = historyIndex - 1; i >= 0; i--)
+                    {
+                        AddHistoryMenuItem(menu, historyList[i], i);
+                    }
+                }
+                else
+                {
+                    // 显示当前索引之后的所有项
+                    for (int i = historyIndex + 1; i < historyList.Count; i++)
+                    {
+                        AddHistoryMenuItem(menu, historyList[i], i);
+                    }
+                }
+
+                if (menu.Items.Count == 0) return;
+
+                menu.PlacementTarget = anchor;
+                menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                menu.IsOpen = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"显示历史菜单失败: {ex.Message}");
+            }
+        }
+
+        private void AddHistoryMenuItem(ContextMenu menu, HistoryItem item, int index)
+        {
+            MenuItem menuItem = new MenuItem
+            {
+                Header = item.Title,
+                ToolTip = item.Url,
+                MaxWidth = 300
+            };
+            
+            menuItem.Click += (s, e) => {
+                try
+                {
+                    // 计算需要跳转的步数
+                    int steps = index - historyIndex;
+                    if (steps == 0) return;
+
+                    isNavigatingFromHistory = true;
+                    if (steps < 0)
+                    {
+                        for (int i = 0; i < Math.Abs(steps); i++)
+                        {
+                            if (webView.CoreWebView2.CanGoBack) webView.CoreWebView2.GoBack();
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < steps; i++)
+                        {
+                            if (webView.CoreWebView2.CanGoForward) webView.CoreWebView2.GoForward();
+                        }
+                    }
+                    
+                    historyIndex = index;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"跳转历史失败: {ex.Message}");
+                }
+            };
+            
+            menu.Items.Add(menuItem);
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)

@@ -121,11 +121,13 @@
                 
                 <!-- 后退按钮 -->
                 <Button Grid.Column="0" Name="BackButton" Content="‹" 
-                        Style="{StaticResource ToolbarButtonStyle}" Click="BackButton_Click"/>
+                        Style="{StaticResource ToolbarButtonStyle}" Click="BackButton_Click"
+                        MouseRightButtonUp="BackButton_RightClick"/>
                 
                 <!-- 前进按钮 -->
                 <Button Grid.Column="1" Name="ForwardButton" Content="›" 
-                        Style="{StaticResource ToolbarButtonStyle}" Click="ForwardButton_Click"/>
+                        Style="{StaticResource ToolbarButtonStyle}" Click="ForwardButton_Click"
+                        MouseRightButtonUp="ForwardButton_RightClick"/>
                 
                 <!-- 刷新按钮 -->
                 <Button Grid.Column="2" Name="RefreshButton" Content="⟳" 
