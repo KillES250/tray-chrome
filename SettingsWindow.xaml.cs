@@ -494,14 +494,20 @@ namespace TrayChrome
                 var json = System.Text.Json.JsonSerializer.Serialize(bookmarks, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(bookmarksFilePath, json);
                 
-                // 同步到主窗口
-                if (mainWindow != null)
+                // 同步到主窗口和托盘图标
+                if (app != null)
                 {
-                    mainWindow.RefreshBookmarkMenu();
+                    app.OnBookmarksUpdated(this, EventArgs.Empty);
                 }
-                
-                // 触发收藏夹更新事件，通知App刷新
-                BookmarksUpdated?.Invoke(this, EventArgs.Empty);
+                else if (mainWindow != null)
+                {
+                    mainWindow.LoadBookmarks();
+                    BookmarksUpdated?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    BookmarksUpdated?.Invoke(this, EventArgs.Empty);
+                }
             }
             catch (Exception ex)
             {

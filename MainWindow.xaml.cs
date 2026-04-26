@@ -522,10 +522,7 @@ namespace TrayChrome
             
             await UpdateProxyConfig();
             
-            if (ProxyToggleMenuItem != null)
-            {
-                ProxyToggleMenuItem.IsChecked = appSettings.IsProxyEnabled;
-            }
+
             if (ProxyToggleMenuItem2 != null)
             {
                 ProxyToggleMenuItem2.IsChecked = appSettings.IsProxyEnabled;
@@ -592,6 +589,10 @@ namespace TrayChrome
         {
             // 改为打开统一的设置窗口，并定位到浏览器设置页
             var settingsWindow = new SettingsWindow(appSettings, this, Application.Current as App);
+            if (settingsWindow.MainTabControl != null)
+            {
+                settingsWindow.MainTabControl.SelectedIndex = 2;
+            }
             settingsWindow.ShowDialog();
         }
 
@@ -1176,7 +1177,7 @@ namespace TrayChrome
 
 
 
-        private void LoadBookmarks()
+        public void LoadBookmarks()
         {
             try
             {
@@ -1291,10 +1292,7 @@ namespace TrayChrome
             }
             
             // 更新代理菜单项状态
-            if (ProxyToggleMenuItem != null)
-            {
-                ProxyToggleMenuItem.IsChecked = appSettings.IsProxyEnabled;
-            }
+
         }
 
         private void ShowSettings_Bookmarks_Click(object sender, RoutedEventArgs e)
@@ -1342,10 +1340,7 @@ namespace TrayChrome
         private void ProxyToggle_Click(object sender, RoutedEventArgs e)
         {
             ToggleProxy();
-            if (ProxyToggleMenuItem != null)
-            {
-                ProxyToggleMenuItem.IsChecked = appSettings.IsProxyEnabled;
-            }
+
         }
         
         private void ProxySettings_Click(object sender, RoutedEventArgs e)

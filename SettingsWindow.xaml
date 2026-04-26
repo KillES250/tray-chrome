@@ -152,7 +152,7 @@
                                     <Label Grid.Column="0" Content="代理地址:"/>
                                     <TextBox Grid.Column="1" Name="ProxyServerTextBox" ToolTip="例如：127.0.0.1:7890"/>
                                 </Grid>
-                                <Label Content="提示：修改代理后可能需要重启浏览器或刷新页面才能生效" 
+                                <Label Content="提示：修改代理后请重启浏览器生效！" 
                                        Foreground="Gray" FontSize="10" Margin="5,0,5,5"/>
                             </StackPanel>
                         </GroupBox>
@@ -265,9 +265,9 @@
                     
                     <!-- 工具栏 -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
-                        <Button Name="AddBookmarkButton" Content="添加收藏" Click="AddBookmarkButton_Click" Margin="0,0,5,0" Width="80" Padding="0,3"/>
-                        <Button Name="EditBookmarkButton" Content="编辑" Click="EditBookmarkButton_Click" Margin="0,0,5,0" Width="70" Padding="0,3"/>
-                        <Button Name="DeleteBookmarkButton" Content="删除" Click="DeleteBookmarkButton_Click" Margin="0,0,5,0" Width="70" Padding="0,3"/>
+                        <Button Name="AddBookmarkButton" Content="添加收藏" Click="AddBookmarkButton_Click"  Width="70" Padding="0,3"/>
+                        <Button Name="EditBookmarkButton" Content="编辑" Click="EditBookmarkButton_Click"  Width="70" Padding="0,3"/>
+                        <Button Name="DeleteBookmarkButton" Content="删除" Click="DeleteBookmarkButton_Click"  Width="70" Padding="0,3"/>
                         <Button Name="RefreshBookmarkButton" Content="刷新" Click="RefreshBookmarkButton_Click" Width="70" Padding="0,3"/>
                     </StackPanel>
                     

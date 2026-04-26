@@ -368,13 +368,12 @@ namespace TrayChrome
             }
         }
 
-        private void OnBookmarksUpdated(object? sender, EventArgs e)
+        public void OnBookmarksUpdated(object? sender, EventArgs e)
         {
-            // 重新加载收藏夹并刷新托盘菜单
+            // 重新加载收藏夹并刷新托盘菜单 (LoadBookmarks 内部会调用 RefreshTrayBookmarkMenu)
             LoadBookmarks();
-            RefreshTrayBookmarkMenu();
             // 同时更新主窗口的收藏夹菜单
-            mainWindow?.RefreshBookmarkMenu();
+            mainWindow?.LoadBookmarks();
         }
         
         private void UpdateAdBlockMenuState()
@@ -977,7 +976,7 @@ $Shortcut.Save()
              }
          }
 
-        private void LoadBookmarks()
+        public void LoadBookmarks()
         {
             try
             {

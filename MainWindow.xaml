@@ -147,9 +147,6 @@
                             <Separator Name="DynamicSeparatorEnd" Visibility="Collapsed"/>
                             <Separator/>
                             <MenuItem Header="open bookmark.json" Click="EditBookmarkJson_Click"/>
-                            <Separator/>
-                            <MenuItem Header="代理开关" IsCheckable="True" Name="ProxyToggleMenuItem" Click="ProxyToggle_Click"/>
-                            <MenuItem Header="代理设置..." Click="ProxySettings_Click"/>
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
@@ -167,30 +164,8 @@
                         Style="{StaticResource ToolbarButtonStyle}" Click="DarkModeButton_Click"
                         ToolTip="切换暗色模式"/>
 
-                <!-- 置顶按钮 -->
-                <Button Grid.Column="7" Name="TopMostButton" Content="📌" 
-                        Style="{StaticResource ToolbarButtonStyle}" Click="TopMostButton_Click"
-                        ToolTip="取消置顶"/>
-                        
-                <!-- 拖动按钮 -->
-                <Label Grid.Column="11" Name="DragButton" Content="" 
-                       Background="Transparent" Foreground="White"
-                       FontSize="16" Cursor="SizeAll"
-                       HorizontalContentAlignment="Center"
-                       VerticalContentAlignment="Center"
-                       ToolTip="拖拽移动窗口"/>
-                       
-                <!-- 缩小按钮 -->
-                <Button Grid.Column="8" Name="ZoomOutButton" Content="-" 
-                        Style="{StaticResource ToolbarButtonStyle}" Click="ZoomOut_Click"
-                        ToolTip="缩小"/>
-                <!-- 放大按钮 -->
-                <Button Grid.Column="9" Name="ZoomInButton" Content="+" 
-                        Style="{StaticResource ToolbarButtonStyle}" Click="ZoomIn_Click"
-                        ToolTip="放大"/>
-
                 <!-- 代理按钮 -->
-                <Button Grid.Column="10" Name="ProxyButton" 
+                <Button Grid.Column="7" Name="ProxyButton" 
                         Style="{StaticResource ToolbarButtonStyle}" Click="ProxyButton_Click"
                         ToolTip="代理设置">
                     <Button.Content>
@@ -206,6 +181,29 @@
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
+
+                <!-- 置顶按钮 -->
+                <Button Grid.Column="8" Name="TopMostButton" Content="📌" 
+                        Style="{StaticResource ToolbarButtonStyle}" Click="TopMostButton_Click"
+                        ToolTip="取消置顶"/>
+                        
+                <!-- 拖动按钮 -->
+                <Label Grid.Column="11" Name="DragButton" Content="" 
+                       Background="Transparent" Foreground="White"
+                       FontSize="16" Cursor="SizeAll"
+                       HorizontalContentAlignment="Center"
+                       VerticalContentAlignment="Center"
+                       ToolTip="拖拽移动窗口"/>
+                       
+                <!-- 缩小按钮 -->
+                <Button Grid.Column="9" Name="ZoomOutButton" Content="-" 
+                        Style="{StaticResource ToolbarButtonStyle}" Click="ZoomOut_Click"
+                        ToolTip="缩小"/>
+                <!-- 放大按钮 -->
+                <Button Grid.Column="10" Name="ZoomInButton" Content="+" 
+                        Style="{StaticResource ToolbarButtonStyle}" Click="ZoomIn_Click"
+                        ToolTip="放大"/>
+
                 
                 <!-- 窗口调整按钮 ↘ -->
                 <Label Grid.Column="12" Name="ResizeButton" Content="" 
