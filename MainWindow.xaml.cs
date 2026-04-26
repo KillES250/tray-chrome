@@ -202,86 +202,8 @@ namespace TrayChrome
                 }
                 else
                 {
-                    // 创建环境选项以启用 FluentOverlay 滚动条
-                    var options = new CoreWebView2EnvironmentOptions();
-                    
-                    // 尝试设置 FluentOverlay 滚动条
-                    try
-                    {
-                        // 使用反射检查并设置 ScrollBarStyle 属性（较新版本的 WebView2 SDK 支持）
-                        var optionsType = typeof(CoreWebView2EnvironmentOptions);
-                        var scrollBarStyleProperty = optionsType.GetProperty("ScrollBarStyle");
-                        if (scrollBarStyleProperty != null)
-                        {
-                            // 获取枚举类型并设置值
-                            var enumType = scrollBarStyleProperty.PropertyType;
-                            var fluentOverlayValue = Enum.Parse(enumType, "FluentOverlay");
-                            scrollBarStyleProperty.SetValue(options, fluentOverlayValue);
-                            System.Diagnostics.Debug.WriteLine("已设置 ScrollBarStyle 为 FluentOverlay");
-                        }
-                        else
-                        {
-                            // 如果属性不存在，使用浏览器标志方式
-                            var additionalBrowserArgumentsProperty = optionsType.GetProperty("AdditionalBrowserArguments");
-                            if (additionalBrowserArgumentsProperty != null)
-                            {
-                                var currentArgs = additionalBrowserArgumentsProperty.GetValue(options) as string ?? "";
-                                var newArgs = string.IsNullOrEmpty(currentArgs) 
-                                    ? "--enable-features=msEdgeFluentOverlayScrollbar" 
-                                    : currentArgs + " --enable-features=msEdgeFluentOverlayScrollbar";
-                                additionalBrowserArgumentsProperty.SetValue(options, newArgs);
-                                System.Diagnostics.Debug.WriteLine("已使用浏览器标志启用 FluentOverlay 滚动条");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // 如果设置失败，尝试使用浏览器标志作为备选方案
-                        System.Diagnostics.Debug.WriteLine($"设置 FluentOverlay 滚动条失败，尝试使用浏览器标志: {ex.Message}");
-                        try
-                        {
-                            var optionsType = typeof(CoreWebView2EnvironmentOptions);
-                            var additionalBrowserArgumentsProperty = optionsType.GetProperty("AdditionalBrowserArguments");
-                            if (additionalBrowserArgumentsProperty != null)
-                            {
-                                var currentArgs = additionalBrowserArgumentsProperty.GetValue(options) as string ?? "";
-                                var newArgs = string.IsNullOrEmpty(currentArgs) 
-                                    ? "--enable-features=msEdgeFluentOverlayScrollbar" 
-                                    : currentArgs + " --enable-features=msEdgeFluentOverlayScrollbar";
-                                additionalBrowserArgumentsProperty.SetValue(options, newArgs);
-                                System.Diagnostics.Debug.WriteLine("已使用浏览器标志启用 FluentOverlay 滚动条（备选方案）");
-                            }
-                        }
-                        catch { }
-                    }
-                    
-                    // 配置代理（如果启用）
-                    if (appSettings.IsProxyEnabled && !string.IsNullOrEmpty(appSettings.ProxyServer))
-                    {
-                        try
-                        {
-                            var optionsType = typeof(CoreWebView2EnvironmentOptions);
-                            var additionalBrowserArgumentsProperty = optionsType.GetProperty("AdditionalBrowserArguments");
-                            if (additionalBrowserArgumentsProperty != null)
-                            {
-                                var currentArgs = additionalBrowserArgumentsProperty.GetValue(options) as string ?? "";
-                                string proxyArgs = $"--proxy-server={appSettings.ProxyServer} --proxy-bypass-list=localhost;127.0.0.1";
-                                var newArgs = string.IsNullOrEmpty(currentArgs) 
-                                    ? proxyArgs 
-                                    : currentArgs + " " + proxyArgs;
-                                additionalBrowserArgumentsProperty.SetValue(options, newArgs);
-                                System.Diagnostics.Debug.WriteLine($"已设置启动代理: {appSettings.ProxyServer}");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"设置启动代理失败: {ex.Message}");
-                        }
-                    }
-                    
-                    // 创建环境并初始化 WebView2（在第一次调用时传入自定义环境）
-                    var environment = await CoreWebView2Environment.CreateAsync(null, null, options);
-                    await webView.EnsureCoreWebView2Async(environment);
+                    // 委托给专门的 Helper 类处理环境创建及 0x8007139F 错误的回退连接
+                    await WebView2EnvironmentHelper.EnsureCoreWebView2WithFallbackAsync(webView, appSettings);
                 }
                 
                 // 优化WebView2设置以减少内存占用
@@ -1319,11 +1241,18 @@ namespace TrayChrome
         {
             try
             {
+                string args = "--open";
+                string currentUrl = webView?.CoreWebView2?.Source ?? "";
+                if (!string.IsNullOrEmpty(currentUrl))
+                {
+                    args += $" --url \"{currentUrl}\"";
+                }
+
                 // 启动新的应用程序实例
                 string currentExecutable = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "";
                 if (!string.IsNullOrEmpty(currentExecutable))
                 {
-                    System.Diagnostics.Process.Start(currentExecutable);
+                    System.Diagnostics.Process.Start(currentExecutable, args);
                 }
                 
                 // 关闭当前实例

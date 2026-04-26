@@ -261,11 +261,21 @@ namespace TrayChrome
         {
             try
             {
+                string args = "--open";
+                if (mainWindow?.webView?.CoreWebView2 != null)
+                {
+                    string currentUrl = mainWindow.webView.CoreWebView2.Source;
+                    if (!string.IsNullOrEmpty(currentUrl))
+                    {
+                        args += $" --url \"{currentUrl}\"";
+                    }
+                }
+
                 // 启动新的应用程序实例
                 string currentExecutable = Process.GetCurrentProcess().MainModule?.FileName ?? "";
                 if (!string.IsNullOrEmpty(currentExecutable))
                 {
-                    Process.Start(currentExecutable);
+                    Process.Start(currentExecutable, args);
                 }
                 
                 // 关闭当前实例
