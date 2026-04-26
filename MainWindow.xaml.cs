@@ -145,8 +145,7 @@ namespace TrayChrome
             // 启动内存清理定时器
             StartMemoryCleanupTimer();
             
-            // 初始化代理环外观
-            UpdateProxyRingAppearance();
+            // 应用UI外观已经在上面调用过了，包含了代理环外观的更新
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -528,28 +527,13 @@ namespace TrayChrome
                 ProxyToggleMenuItem2.IsChecked = appSettings.IsProxyEnabled;
             }
             
-            UpdateProxyRingAppearance();
+            UpdateUIAppearance(isDarkMode);
             
             string status = appSettings.IsProxyEnabled ? $"已启用代理: {appSettings.ProxyServer}" : "已禁用代理";
             System.Diagnostics.Debug.WriteLine(status);
         }
         
-        private void UpdateProxyRingAppearance()
-        {
-            if (ProxyRing != null)
-            {
-                if (appSettings.IsProxyEnabled)
-                {
-                    ProxyRing.Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x87, 0xCE, 0xFA)); // LightBlue
-                }
-                else
-                {
-                    ProxyRing.Stroke = isDarkMode 
-                        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White) 
-                        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray);
-                }
-            }
-        }
+
         
         private async Task UpdateProxyConfig()
         {
@@ -669,6 +653,13 @@ namespace TrayChrome
                      {
                          ResizeButton.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
                      }
+                     
+                     if (ProxyRing != null)
+                     {
+                         ProxyRing.Stroke = appSettings.IsProxyEnabled 
+                             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x87, 0xCE, 0xFA)) 
+                             : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White);
+                     }
                  }
                  else
                  {
@@ -704,6 +695,13 @@ namespace TrayChrome
                      if (ResizeButton != null)
                      {
                          ResizeButton.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x33, 0x33, 0x33));
+                     }
+                     
+                     if (ProxyRing != null)
+                     {
+                         ProxyRing.Stroke = appSettings.IsProxyEnabled 
+                             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x87, 0xCE, 0xFA)) 
+                             : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x33, 0x33, 0x33));
                      }
                  }
                  
@@ -2065,7 +2063,15 @@ namespace TrayChrome
             try
             {
                 // 应用缩放
-                currentZoomFactor = settings.ZoomFactor;
+                if (settings.AutoZoomOutOnStartup)
+                {
+                    currentZoomFactor = 0.8;
+                }
+                else
+                {
+                    currentZoomFactor = settings.ZoomFactor;
+                }
+
                 if (webView?.CoreWebView2 != null)
                 {
                     webView.ZoomFactor = currentZoomFactor;
@@ -2304,6 +2310,9 @@ namespace TrayChrome
         // 全局快捷键设置
         public string Hotkey { get; set; } = "alt + x";
         public bool EnableGlobalHotKey { get; set; } = true;
+        
+        // 启动设置
+        public bool AutoZoomOutOnStartup { get; set; } = true;
         
         // 内部使用的快捷键解析属性
         public uint HotKeyModifiers 

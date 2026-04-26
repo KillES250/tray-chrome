@@ -121,17 +121,20 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10">
                         <GroupBox Header="缩放">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Label Grid.Column="0" Content="缩放比例:"/>
-                                <Slider Grid.Column="1" Name="ZoomSlider" Minimum="0.3" Maximum="3.0" TickFrequency="0.1" 
-                                        TickPlacement="BottomRight" Margin="5"/>
-                                <Label Grid.Column="2" Name="ZoomValueLabel" MinWidth="50"/>
-                            </Grid>
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="缩放比例:"/>
+                                    <Slider Grid.Column="1" Name="ZoomSlider" Minimum="0.3" Maximum="3.0" TickFrequency="0.1" 
+                                            TickPlacement="BottomRight" Margin="5"/>
+                                    <Label Grid.Column="2" Name="ZoomValueLabel" MinWidth="50"/>
+                                </Grid>
+                                <CheckBox Name="AutoZoomOutCheckBox" Content="启动后自动缩小比例 (80%)" Margin="5,0,5,5"/>
+                            </StackPanel>
                         </GroupBox>
                         
                         <GroupBox Header="用户代理">

@@ -41,6 +41,7 @@ namespace TrayChrome
         public string SelectedIconType { get; set; } = "default";
         public bool IsProxyEnabled { get; set; }
         public string ProxyServer { get; set; } = string.Empty;
+        public bool AutoZoomOutOnStartup { get; set; }
 
         public SettingsWindow(AppSettings settings, MainWindow? mainWindow = null, App? app = null)
         {
@@ -75,7 +76,8 @@ namespace TrayChrome
                 Hotkey = settings.Hotkey,
                 EnableGlobalHotKey = settings.EnableGlobalHotKey,
                 IsProxyEnabled = settings.IsProxyEnabled,
-                ProxyServer = settings.ProxyServer
+                ProxyServer = settings.ProxyServer,
+                AutoZoomOutOnStartup = settings.AutoZoomOutOnStartup
             };
             
             // 加载当前设置到UI
@@ -109,6 +111,7 @@ namespace TrayChrome
             Hotkey = currentSettings.Hotkey;
             IsProxyEnabled = currentSettings.IsProxyEnabled;
             ProxyServer = currentSettings.ProxyServer;
+            AutoZoomOutOnStartup = currentSettings.AutoZoomOutOnStartup;
         }
 
         private void SetupDataBinding()
@@ -186,6 +189,11 @@ namespace TrayChrome
 
             ProxyServerTextBox.Text = ProxyServer;
             ProxyServerTextBox.TextChanged += (s, e) => ProxyServer = ProxyServerTextBox.Text;
+
+            // 启动缩放
+            AutoZoomOutCheckBox.IsChecked = AutoZoomOutOnStartup;
+            AutoZoomOutCheckBox.Checked += (s, e) => AutoZoomOutOnStartup = true;
+            AutoZoomOutCheckBox.Unchecked += (s, e) => AutoZoomOutOnStartup = false;
         }
 
         private void LoadIconSetting()
@@ -356,6 +364,7 @@ namespace TrayChrome
                 currentSettings.Hotkey = Hotkey;
                 currentSettings.IsProxyEnabled = IsProxyEnabled;
                 currentSettings.ProxyServer = ProxyServer;
+                currentSettings.AutoZoomOutOnStartup = AutoZoomOutOnStartup;
                 
                 // 应用设置到主窗口
                 if (mainWindow != null)
@@ -460,6 +469,7 @@ namespace TrayChrome
             target.EnableGlobalHotKey = source.EnableGlobalHotKey;
             target.IsProxyEnabled = source.IsProxyEnabled;
             target.ProxyServer = source.ProxyServer;
+            target.AutoZoomOutOnStartup = source.AutoZoomOutOnStartup;
         }
 
         // 收藏夹管理方法
