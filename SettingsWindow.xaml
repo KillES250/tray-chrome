@@ -265,10 +265,10 @@
                     
                     <!-- 工具栏 -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
-                        <Button Name="AddBookmarkButton" Content="添加收藏" Click="AddBookmarkButton_Click" Margin="0,0,5,0" Padding="8,3"/>
-                        <Button Name="EditBookmarkButton" Content="编辑" Click="EditBookmarkButton_Click" Margin="0,0,5,0" Padding="8,3"/>
-                        <Button Name="DeleteBookmarkButton" Content="删除" Click="DeleteBookmarkButton_Click" Margin="0,0,5,0" Padding="8,3"/>
-                        <Button Name="RefreshBookmarkButton" Content="刷新" Click="RefreshBookmarkButton_Click" Padding="8,3"/>
+                        <Button Name="AddBookmarkButton" Content="添加收藏" Click="AddBookmarkButton_Click" Margin="0,0,5,0" Width="80" Padding="0,3"/>
+                        <Button Name="EditBookmarkButton" Content="编辑" Click="EditBookmarkButton_Click" Margin="0,0,5,0" Width="70" Padding="0,3"/>
+                        <Button Name="DeleteBookmarkButton" Content="删除" Click="DeleteBookmarkButton_Click" Margin="0,0,5,0" Width="70" Padding="0,3"/>
+                        <Button Name="RefreshBookmarkButton" Content="刷新" Click="RefreshBookmarkButton_Click" Width="70" Padding="0,3"/>
                     </StackPanel>
                     
                     <!-- 收藏夹列表 -->

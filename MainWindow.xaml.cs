@@ -144,6 +144,9 @@ namespace TrayChrome
             
             // 启动内存清理定时器
             StartMemoryCleanupTimer();
+            
+            // 初始化代理环外观
+            UpdateProxyRingAppearance();
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -523,12 +526,32 @@ namespace TrayChrome
             {
                 ProxyToggleMenuItem.IsChecked = appSettings.IsProxyEnabled;
             }
+            if (ProxyToggleMenuItem2 != null)
+            {
+                ProxyToggleMenuItem2.IsChecked = appSettings.IsProxyEnabled;
+            }
+            
+            UpdateProxyRingAppearance();
             
             string status = appSettings.IsProxyEnabled ? $"已启用代理: {appSettings.ProxyServer}" : "已禁用代理";
             System.Diagnostics.Debug.WriteLine(status);
-            
-            // 提示用户可能需要刷新页面
-            // webView.CoreWebView2.Reload(); 
+        }
+        
+        private void UpdateProxyRingAppearance()
+        {
+            if (ProxyRing != null)
+            {
+                if (appSettings.IsProxyEnabled)
+                {
+                    ProxyRing.Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x87, 0xCE, 0xFA)); // LightBlue
+                }
+                else
+                {
+                    ProxyRing.Stroke = isDarkMode 
+                        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White) 
+                        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray);
+                }
+            }
         }
         
         private async Task UpdateProxyConfig()
@@ -700,7 +723,7 @@ namespace TrayChrome
                  var buttons = new[]
                  {
                      CloseButton, BackButton, ForwardButton, RefreshButton, BookmarkButton,
-                     DarkModeButton, PopupButton, UAButton, TopMostButton, ZoomOutButton, ZoomInButton
+                     DarkModeButton, PopupButton, UAButton, TopMostButton, ZoomOutButton, ZoomInButton, ProxyButton
                  };
                  
                  // 创建新的样式，根据暗色/亮色模式设置不同的悬停和按下颜色
@@ -1277,12 +1300,43 @@ namespace TrayChrome
         private void ShowSettings_Bookmarks_Click(object sender, RoutedEventArgs e)
         {
             var settingsWindow = new SettingsWindow(appSettings, this, Application.Current as App);
-            // 收藏夹通常是第5个标签，索引为 4
+            // 收藏夹是第6个标签，索引为 5
             if (settingsWindow.MainTabControl != null)
             {
-                settingsWindow.MainTabControl.SelectedIndex = 4;
+                settingsWindow.MainTabControl.SelectedIndex = 5;
             }
             settingsWindow.ShowDialog();
+        }
+
+        private void ProxyButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProxyButton.ContextMenu != null)
+            {
+                ProxyButton.ContextMenu.PlacementTarget = ProxyButton;
+                ProxyButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                ProxyToggleMenuItem2.IsChecked = appSettings.IsProxyEnabled;
+                ProxyButton.ContextMenu.IsOpen = true;
+            }
+        }
+
+        private void RestartApp_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // 启动新的应用程序实例
+                string currentExecutable = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                if (!string.IsNullOrEmpty(currentExecutable))
+                {
+                    System.Diagnostics.Process.Start(currentExecutable);
+                }
+                
+                // 关闭当前实例
+                Application.Current.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"重启失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         
         private void ProxyToggle_Click(object sender, RoutedEventArgs e)

@@ -115,6 +115,7 @@
                     <ColumnDefinition Width="30"/>
                     <ColumnDefinition Width="30"/>
                     <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="30"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="20"/>
                 </Grid.ColumnDefinitions>
@@ -172,7 +173,7 @@
                         ToolTip="取消置顶"/>
                         
                 <!-- 拖动按钮 -->
-                <Label Grid.Column="10" Name="DragButton" Content="" 
+                <Label Grid.Column="11" Name="DragButton" Content="" 
                        Background="Transparent" Foreground="White"
                        FontSize="16" Cursor="SizeAll"
                        HorizontalContentAlignment="Center"
@@ -187,9 +188,27 @@
                 <Button Grid.Column="9" Name="ZoomInButton" Content="+" 
                         Style="{StaticResource ToolbarButtonStyle}" Click="ZoomIn_Click"
                         ToolTip="放大"/>
+
+                <!-- 代理按钮 -->
+                <Button Grid.Column="10" Name="ProxyButton" 
+                        Style="{StaticResource ToolbarButtonStyle}" Click="ProxyButton_Click"
+                        ToolTip="代理设置">
+                    <Button.Content>
+                        <Grid Width="14" Height="14">
+                            <Ellipse Name="ProxyRing" Stroke="White" StrokeThickness="2" Fill="Transparent"/>
+                        </Grid>
+                    </Button.Content>
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="开启/关闭代理" Click="ProxyToggle_Click" IsCheckable="True" Name="ProxyToggleMenuItem2"/>
+                            <MenuItem Header="代理设置页面" Click="ProxySettings_Click"/>
+                            <MenuItem Header="重启实例 (生效Proxy)" Click="RestartApp_Click"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
                 
                 <!-- 窗口调整按钮 ↘ -->
-                <Label Grid.Column="11" Name="ResizeButton" Content="" 
+                <Label Grid.Column="12" Name="ResizeButton" Content="" 
                        Background="Transparent" Foreground="White"
                        FontSize="16" Cursor="SizeNWSE"
                        HorizontalContentAlignment="Center"

@@ -14,14 +14,14 @@
                     <MenuItem Header="启用动画" Name="AnimationMenuItem" Click="Animation_Click" IsCheckable="True" IsChecked="True" />
                     <MenuItem Header="广告拦截" Name="AdBlockMenuItem" Click="AdBlock_Click" IsCheckable="True" />
                     <Separator />
-                    <MenuItem Header="设置" Click="OpenSettings_Click" />
+                    <MenuItem Header="设置 (_S)" Click="OpenSettings_Click" />
                     <Separator />
-                    <MenuItem Header="创建桌面快捷方式" Click="CreateDesktopShortcut_Click" />
+                    <MenuItem Header="创建桌面快捷方式 (_C)" Click="CreateDesktopShortcut_Click" />
                     <Separator />
-                    <MenuItem Header="增加实例" Click="AddInstance_Click" />
-                    <MenuItem Header="重启实例" Click="RestartInstance_Click" />
+                    <MenuItem Header="增加实例 (_N)" Click="AddInstance_Click" />
+                    <MenuItem Header="重启实例 (_R)" Click="RestartInstance_Click" />
                     <Separator />
-                    <MenuItem Header="关闭实例" Click="CloseInstance_Click" />
+                    <MenuItem Header="关闭实例 (_Q)" Click="CloseInstance_Click" />
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
