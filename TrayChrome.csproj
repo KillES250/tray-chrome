@@ -23,4 +23,10 @@
     <Resource Include="Resources\alternative-icons\weixin.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="script-intercepts.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

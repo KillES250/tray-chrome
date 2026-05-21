@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -249,7 +249,7 @@ namespace TrayChrome
                 // 导航到启动URL或默认URL
                 string urlToNavigate = !string.IsNullOrEmpty(startupUrl) 
                     ? startupUrl 
-                    : "https://tva.cornradio.org/?name=search";
+                    : "http://wsmud2.com/";
                 
                 webView.CoreWebView2.Navigate(urlToNavigate);
                 AddressBar.Text = urlToNavigate;

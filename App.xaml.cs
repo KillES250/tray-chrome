@@ -23,6 +23,7 @@ namespace TrayChrome
         
         // 全局快捷键管理器
         private GlobalHotKeyManager? hotKeyManager;
+        private ScriptInjectionCoordinator? scriptInjectionCoordinator;
         private AppSettings appSettings = new AppSettings();
         private string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
         private FileSystemWatcher? settingsWatcher;
@@ -161,6 +162,8 @@ namespace TrayChrome
             
             // 创建主窗口，传入启动参数
             mainWindow = new MainWindow(startupUrl, shouldUseCleanMode, shouldForceUncleanMode, customWidth, customHeight);
+            scriptInjectionCoordinator = new ScriptInjectionCoordinator(mainWindow);
+            _ = scriptInjectionCoordinator.InitializeAsync();
             
             // 根据 --open 参数决定是否显示窗口
             if (shouldOpen)

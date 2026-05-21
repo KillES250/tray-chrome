@@ -1,0 +1,24 @@
+{
+  "rules": [
+    {
+      "domains": [
+        "wsmud2.com"
+      ],
+      "interceptJs": [
+        "ws.js",
+        "jquery-3.7.1.min.js"
+      ],
+      "injectJs": [
+        "scripts\\vue.min.js",
+        "scripts\\jquery-3.7.1.min.js",
+        "scripts\\jquery.contextMenu.min.js",
+        "scripts\\store.modern.min.js",
+        "scripts\\GMfuc.js",
+        "scripts\\wsp.js",
+        "scripts\\wsr.js",
+        "scripts\\wst.js",
+        "scripts\\ws.js"
+      ]
+    }
+  ]
+}
