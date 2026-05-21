@@ -1,3 +1,8 @@
+# js拦截版
+
+在原版基础上添加了js拦截和注入的功能，示例在script-intercepts.json文件中
+
+
 # TrayChrome - 托盘浏览器
 
 一个基于 WPF 和 WebView2 的轻量级托盘浏览器，专为 Windows 设计。类似 MenubarX，但更加轻便和功能丰富。
