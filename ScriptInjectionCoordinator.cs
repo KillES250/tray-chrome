@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
@@ -17,6 +18,7 @@ namespace TrayChrome
         private ActiveRule? activeRule;
         private bool handlerAttached;
         private CoreWebView2? boundCore;
+        private CancellationTokenSource? injectCts;
 
         public ScriptInjectionCoordinator(MainWindow window)
         {
@@ -49,6 +51,8 @@ namespace TrayChrome
         public void RebindToWebView()
         {
             // 清理旧绑定
+            injectCts?.Cancel();
+            injectCts = null;
             if (boundCore != null)
             {
                 boundCore.WebResourceRequested -= OnWebResourceRequested;
@@ -100,14 +104,40 @@ namespace TrayChrome
             handlerAttached = true;
         }
 
-        private void OnNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
+        private async void OnNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs e)
         {
-            LoadConfig();
-            activeRule = MatchRule(e.Uri);
-            _ = PrepareInjectScriptsOnStartedAsync();
+            // 取消上一次尚未完成的注入
+            injectCts?.Cancel();
+            injectCts = new CancellationTokenSource();
+            var ct = injectCts.Token;
+
+            string uri = e.Uri;
+
+            try
+            {
+                // 文件 I/O 移到后台线程，避免阻塞导航
+                ActiveRule? matched = await Task.Run(() =>
+                {
+                    LoadConfig();
+                    return MatchRule(uri);
+                }, ct);
+
+                if (ct.IsCancellationRequested) return;
+
+                activeRule = matched;
+                await PrepareInjectScriptsOnStartedAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                // 导航被取消，忽略
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"脚本注入异常: {ex.Message}");
+            }
         }
 
-        private async Task PrepareInjectScriptsOnStartedAsync()
+        private async Task PrepareInjectScriptsOnStartedAsync(CancellationToken ct)
         {
             var core = window.webView?.CoreWebView2;
             if (core == null)
@@ -115,6 +145,7 @@ namespace TrayChrome
                 return;
             }
 
+            // 移除之前注册的脚本
             foreach (var id in addedScriptIds)
             {
                 core.RemoveScriptToExecuteOnDocumentCreated(id);
@@ -128,6 +159,11 @@ namespace TrayChrome
 
             foreach (var script in activeRule.InjectScripts)
             {
+                if (ct.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(script))
                 {
                     continue;
