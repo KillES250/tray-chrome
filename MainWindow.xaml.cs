@@ -56,6 +56,7 @@ namespace TrayChrome
         private bool isAnimationEnabled = true; // 动画启用状态
         private bool hasSavedPosition = false; // 是否存在保存的位置
         private AdBlocker adBlocker = new AdBlocker(); // 广告拦截器
+        internal ScriptInjectionCoordinator? scriptInjectionCoordinator;
         
         // 历史记录追踪
         private List<HistoryItem> historyList = new List<HistoryItem>();
@@ -1946,8 +1947,11 @@ namespace TrayChrome
                     
                     // 7. 重新初始化
                     await InitializeWebViewInternal();
-                    
-                    // 8. 重新初始化广告拦截器
+
+                    // 8. 重新绑定JS注入协调器
+                    scriptInjectionCoordinator?.RebindToWebView();
+
+                    // 9. 重新初始化广告拦截器
                     InitializeAdBlocker();
                     
                     // 9. 重新启动内存清理定时器

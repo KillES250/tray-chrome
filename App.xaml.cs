@@ -163,6 +163,7 @@ namespace TrayChrome
             // 创建主窗口，传入启动参数
             mainWindow = new MainWindow(startupUrl, shouldUseCleanMode, shouldForceUncleanMode, customWidth, customHeight);
             scriptInjectionCoordinator = new ScriptInjectionCoordinator(mainWindow);
+            mainWindow.scriptInjectionCoordinator = scriptInjectionCoordinator;
             _ = scriptInjectionCoordinator.InitializeAsync();
             
             // 根据 --open 参数决定是否显示窗口

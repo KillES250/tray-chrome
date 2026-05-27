@@ -16,6 +16,7 @@ namespace TrayChrome
         private List<ScriptRule> rules = new List<ScriptRule>();
         private ActiveRule? activeRule;
         private bool handlerAttached;
+        private CoreWebView2? boundCore;
 
         public ScriptInjectionCoordinator(MainWindow window)
         {
@@ -39,6 +40,35 @@ namespace TrayChrome
                 }
 
                 await Task.Delay(100);
+            }
+        }
+
+        /// <summary>
+        /// WebView2 被重建后调用，重新绑定事件到新的 CoreWebView2
+        /// </summary>
+        public void RebindToWebView()
+        {
+            // 清理旧绑定
+            if (boundCore != null)
+            {
+                boundCore.WebResourceRequested -= OnWebResourceRequested;
+                boundCore.NavigationStarting -= OnNavigationStarting;
+                boundCore = null;
+            }
+            handlerAttached = false;
+            addedScriptIds.Clear();
+            activeRule = null;
+
+            // 重新绑定到新 webView
+            if (window.webView != null)
+            {
+                window.webView.CoreWebView2InitializationCompleted += OnCoreInitialized;
+
+                var core = window.webView.CoreWebView2;
+                if (core != null)
+                {
+                    AttachHandlers(core);
+                }
             }
         }
 
@@ -66,6 +96,7 @@ namespace TrayChrome
             core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.Script);
             core.WebResourceRequested += OnWebResourceRequested;
             core.NavigationStarting += OnNavigationStarting;
+            boundCore = core;
             handlerAttached = true;
         }
 
